@@ -1,0 +1,553 @@
+{
+  "name": "Daily News Briefing",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9a857bfe-77c7-407b-b034-be2018721e09",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://newsapi.org/v2/everything",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "technology Pakistan"
+            },
+            {
+              "name": "apiKey",
+              "value": "your-api-key"
+            },
+            {
+              "name": "pageSize",
+              "value": "10"
+            },
+            {
+              "name": "language",
+              "value": "en"
+            },
+            {
+              "name": "sortByAt",
+              "value": "published"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        192,
+        -384
+      ],
+      "id": "d9e0a8a9-13c0-4fbb-959e-efaa90d90fa2",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        432,
+        0
+      ],
+      "id": "fbe5ba89-8bff-4c31-85a5-865f65bcba88",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "url": "https://gnews.io/api/v4/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "technology Pakistan"
+            },
+            {
+              "name": "token",
+              "value": "your-token"
+            },
+            {
+              "name": "lang",
+              "value": "en"
+            },
+            {
+              "name": "max",
+              "value": "10"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        208,
+        176
+      ],
+      "id": "1157c4b1-0d13-40dd-8838-cd7fd95080ef",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  if (item.json.articles) {\n    for (const article of item.json.articles) {\n      \n      // Skip if title is missing\n      if (!article.title) continue;\n\n      results.push({\n        json: {\n          title: article.title,\n          description: article.description || '',\n          url: article.url,\n          publishedAt: article.publishedAt,\n          // Handle both NewsAPI and GNews source formats\n          source: article.source?.name || article.source || 'Unknown'\n        }\n      });\n    }\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "1f46c03b-d737-49ed-9bcf-3614089ccc52",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        832,
+        -192
+      ],
+      "id": "95b88fc5-55ca-439f-94e5-e5954769ab89",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0d2fab69-9006-4da2-846a-bfca1d37a063",
+              "leftValue": "={{ $json.choices[0].message.content.trim().toUpperCase() }}",
+              "rightValue": "YES",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1328,
+        -144
+      ],
+      "id": "e04e3f11-8672-4ff7-ae4d-a48e4811e625",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "11s8os4CCJ3w9I8PyntgaF944qs39uSHJYBfkh7ro3EQ",
+          "mode": "list",
+          "cachedResultName": "Daily News Briefing",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/11s8os4CCJ3w9I8PyntgaF944qs39uSHJYBfkh7ro3EQ/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "=gid=0",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Published At",
+              "displayName": "Published At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1680,
+        -144
+      ],
+      "id": "360e2654-47d9-4a52-b097-d2132c4a50d7",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "D190PUY6YQDVUM3y",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "maths.ace.it@gmail.com",
+        "subject": "=Your Daily News Briefing - {{ $now.format('yyyy-MM-dd') }}",
+        "emailType": "text",
+        "message": "Good Morning!  Here is your daily tech news briefing for today.  Please check your Google Sheet for all relevant articles that were found today.  This is an automated message from your n8n News Briefing Workflow.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1296,
+        -336
+      ],
+      "id": "342ad1f4-696e-4b29-8a78-37a579fa629b",
+      "name": "Send a message",
+      "webhookId": "ad48dff4-80b3-4663-8a83-7b8c148a6463",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "w54XfFNmysALCqCj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1024,
+        400
+      ],
+      "id": "a662114b-cf37-44ef-b81c-eb00ddbc20fe",
+      "name": "Wait",
+      "webhookId": "570bf253-cc48-4714-9524-e410d5211b3b"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "groqApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "gsk_api_here"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "{\"model\":\"llama-3.3-70b-versatile\",\"messages\":[{\"role\":\"user\",\"content\":\"You are a news classifier. Reply YES if the article is about ANY of these topics: Artificial Intelligence, Technology, Pakistan economy, Pakistan industry, startups, digital innovation, software, IT sector. Reply NO only for pure sports, pure military conflict, or celebrity news. Article Title: {{$json.title}} Article Description: {{$json.description}} Reply with ONE word only: YES or NO\"}]}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1280,
+        288
+      ],
+      "id": "5a0029ca-c33b-4481-9df2-8f10284c472d",
+      "name": "HTTP Request2",
+      "credentials": {
+        "groqApi": {
+          "id": "avJ027lBqTHYZH5V",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bdd0305b-d555-4e30-9c84-1f19e3ae68bc",
+              "name": "Title",
+              "value": "={{ $('Loop Over Items').item.json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "299511b9-d007-4567-a771-5e36ed74e8eb",
+              "name": "URL",
+              "value": "={{ $('Loop Over Items').item.json.url }}",
+              "type": "string"
+            },
+            {
+              "id": "8b5c998c-7cfe-440b-b7c8-89c2af933807",
+              "name": "Source",
+              "value": "={{ $('Loop Over Items').item.json.source }}",
+              "type": "string"
+            },
+            {
+              "id": "cec00276-ce1e-43d1-9267-ad72724d83e9",
+              "name": "Published At",
+              "value": "={{ $('Loop Over Items').item.json.publishedAt }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1536,
+        -240
+      ],
+      "id": "e9d62c24-7c7b-433a-b14f-f2da4345b3c3",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        -288
+      ],
+      "id": "0ef43623-8f8e-4fb7-b857-2f6ff1c51ecc",
+      "name": "Aggregate"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b3c17f68-6452-4571-a2c7-2ea8aec34eda",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c8456a355afc9f4c844c72134bd01419a84c8abf10d16d9474039d2127f154e3"
+  },
+  "id": "INDMPaiD_sz2tu6z1-xsi",
+  "tags": []
+}
