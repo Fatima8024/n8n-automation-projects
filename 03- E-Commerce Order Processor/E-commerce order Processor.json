@@ -1,0 +1,442 @@
+{
+  "name": "E-commerce order Processor",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "order-processor",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        -416
+      ],
+      "id": "63064d5d-80a3-41e0-9319-5af9ffd9ff87",
+      "name": "Webhook",
+      "webhookId": "f764cc83-e065-4489-bcfd-fc1ffa551798"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0d090466-24ee-4411-9531-2af45f1994f8",
+              "leftValue": "={{ $json.stock_available }}",
+              "rightValue": "={{ $json.quantity_ordered }}",
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        736,
+        -336
+      ],
+      "id": "d4a37d2d-8f44-48ba-9a36-0553369ab1e7",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawInput = $input.first().json;\nconst order = rawInput.body || rawInput; // works in both test & live mode\n\n// Extract top-level order details\nconst orderId = order.order_id;\nconst customerName = order.customer.name;\nconst customerEmail = order.customer.email;\nconst customerAddress = order.customer.address;\nconst shippingMethod = order.shipping_method;\nconst paymentStatus = order.payment_status;\nconst orderDate = order.order_date;\nconst totalAmount = order.total_amount;\n\n// Loop through each item and create a separate n8n item\nconst outputItems = order.items.map(item => {\n  return {\n    json: {\n      // Order context (carried forward for later nodes)\n      order_id: orderId,\n      customer_name: customerName,\n      customer_email: customerEmail,\n      customer_address: customerAddress,\n      shipping_method: shippingMethod,\n      payment_status: paymentStatus,\n      order_date: orderDate,\n      total_amount: totalAmount,\n\n      // Individual product details\n      sku: item.sku,\n      product_name: item.product_name,\n      quantity_ordered: item.quantity,\n      price: item.price\n    }\n  };\n});\n\nreturn outputItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        -416
+      ],
+      "id": "4f6997f7-69d4-424b-b4a2-bdcf67cfa31d",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1YWOHkvuFb88pHJUQ-Xv-8ahBMfGvu3O6_1cH_tvxi8A/edit?gid=1517277479#gid=1517277479",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1517277479,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1YWOHkvuFb88pHJUQ-Xv-8ahBMfGvu3O6_1cH_tvxi8A/edit#gid=1517277479"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        368,
+        -224
+      ],
+      "id": "8a262bac-dfc0-4869-8e45-fb89fafaef5f",
+      "name": "Inventory DB",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "D190PUY6YQDVUM3y",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "sku",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        544,
+        -400
+      ],
+      "id": "718b28ed-1193-4b29-b7ea-1e8827895811",
+      "name": "Merge order data with stock data"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1YWOHkvuFb88pHJUQ-Xv-8ahBMfGvu3O6_1cH_tvxi8A",
+          "mode": "list",
+          "cachedResultName": "Inventory Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1YWOHkvuFb88pHJUQ-Xv-8ahBMfGvu3O6_1cH_tvxi8A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 217210942,
+          "mode": "list",
+          "cachedResultName": "FulfillmentQueue",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1YWOHkvuFb88pHJUQ-Xv-8ahBMfGvu3O6_1cH_tvxi8A/edit#gid=217210942"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "order_id",
+              "displayName": "order_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "customer_name",
+              "displayName": "customer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "customer_address",
+              "displayName": "customer_address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sku",
+              "displayName": "sku",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "quantity_ordered",
+              "displayName": "quantity_ordered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "warehouse_location",
+              "displayName": "warehouse_location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "customer_email",
+              "displayName": "customer_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "shipping_method",
+              "displayName": "shipping_method",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "payment_status",
+              "displayName": "payment_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "order_date",
+              "displayName": "order_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "total_amount",
+              "displayName": "total_amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "product_name",
+              "displayName": "product_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "price",
+              "displayName": "price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stock_available",
+              "displayName": "stock_available",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "reorder_level",
+              "displayName": "reorder_level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        944,
+        -432
+      ],
+      "id": "a468f8c5-363c-4065-b845-018ee3846052",
+      "name": "Append/update row in sheet if in stock",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "D190PUY6YQDVUM3y",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "maths.ace.it@gmail.com",
+        "subject": "=⚠️ Stock Alert - {{ $json.sku }} Out of Stock",
+        "message": "=STOCK ALERT      Order ID:         {{ $json.order_id }}   Item:             {{ $json.product_name }}   SKU:              {{ $json.sku }}   Stock Available:  {{ $json.stock_available }}   Quantity Ordered: {{ $json.quantity_ordered }}   Shortfall:        {{ $json.quantity_ordered - $json.stock_available }} units      Please restock immediately or contact the customer.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        944,
+        -240
+      ],
+      "id": "d4ad9110-0ddf-463d-92c2-cc4ae7e13863",
+      "name": "Send an email if out of stock",
+      "webhookId": "64eb7c0c-17f3-4a4a-8382-b62cb27a4ed4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "w54XfFNmysALCqCj",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "maths.ace.it@gmail.com",
+        "subject": "= New Order Ready to Pack - {{ $json.order_id }}",
+        "message": "=Order ID:    {{ $json.order_id }}   Customer:    {{ $json.customer_name }}   Address:     {{ $json.customer_address }}      Item to Pack:   {{ $json.quantity_ordered }}x {{ $json.product_name }}   Location: {{ $json.warehouse_location }}      Shipping: {{ $json.shipping_method }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1152,
+        -432
+      ],
+      "id": "02c94af5-1ec6-4f1c-b3d3-dab08740b5a4",
+      "name": "Emails warehouse team",
+      "webhookId": "ff81a5a6-82a2-4726-aad8-cea000d97aa8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "w54XfFNmysALCqCj",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Append/update row in sheet if in stock",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send an email if out of stock",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Merge order data with stock data",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Inventory DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inventory DB": {
+      "main": [
+        [
+          {
+            "node": "Merge order data with stock data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge order data with stock data": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append/update row in sheet if in stock": {
+      "main": [
+        [
+          {
+            "node": "Emails warehouse team",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "e6c38c3f-8518-4561-86a4-5add01be6205",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c8456a355afc9f4c844c72134bd01419a84c8abf10d16d9474039d2127f154e3"
+  },
+  "id": "rxkDW84k0hcGMFtJTcGzf",
+  "tags": []
+}
