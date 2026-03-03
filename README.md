@@ -6,6 +6,6 @@ A collection of automation workflows built with n8n.
 |---|----------------------------|-------------------------------------|--------------------------------------|
 | 1 | Product Data Automation    | Google Sheets, Gmail,FakeStore  | Real-time product tracker with Gmail |
 | 2 | Personalized News Briefing | NewsAPI, Groq, Google Sheets, Gmail | Daily AI-filtered news delivery      |
-| 3 | Ecommerce Order Processor  | Google Sheets , Webhook , JavaScript, Merge Node, IF Logic, Gmail, Hoppscotch
+| 3 | Ecommerce Order Processor  | Google Sheets , Webhook , JavaScript, Merge Node, IF Logic, Gmail, Hoppscotch | Automated e-commerce order fulfillment pipeline-from order intake to warehouse notification 
 | 4 |Intelligent Customer Feedback Processor| n8n, Google Gemini AI, Google  Sheets, Gmail|  Auto-analyzes customer feedback sentiment and routes it to Google Sheets or Gmail
 | 5 |             Coming Soon!
