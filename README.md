@@ -8,4 +8,5 @@ A collection of automation workflows built with n8n.
 | 2 | Personalized News Briefing | NewsAPI, Groq, Google Sheets, Gmail | Daily AI-filtered news delivery      |
 | 3 | Ecommerce Order Processor  | Google Sheets , Webhook , JavaScript, Merge Node, IF Logic, Gmail, Hoppscotch | Automated e-commerce order fulfillment pipeline-from order intake to warehouse notification 
 | 4 |Intelligent Customer Feedback Processor| n8n, Google Gemini AI, Google  Sheets, Gmail|  Auto-analyzes customer feedback sentiment and routes it to Google Sheets or Gmail
-| 5 |             Coming Soon!
+| 5 |AI Voice Scheduling Agent  | n8n, Azure OpenAI, Google Sheets, Google Calendar, Gmail, and ElevenLabs. | Virtual receptionist that can understand user requests, find contact details, schedule meetings, and send confirmation emails automatically. 
+| 6 |  Coming soon!
